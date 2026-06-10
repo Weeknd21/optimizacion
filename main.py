@@ -12,12 +12,12 @@ def parse_args():
         description="Reconstruccion de imagenes mediante strokes (cuadrados) optimizados."
     )
     parser.add_argument(
-        "target", nargs="?", default="coso.png",
+        "target", nargs="?", default="evngelion.jpg",
         help="Ruta de la imagen objetivo (default: evngelion.jpg)"
     )
     parser.add_argument(
-        "-n", "--strokes", type=int, default=1500,
-        help="Numero total de strokes a colocar (default: 1500)"
+        "-n", "--strokes", type=int, default=3000,
+        help="Numero total de strokes a colocar (default: 3000)"
     )
     parser.add_argument(
         "-r", "--resolution", type=int, default=400,
@@ -53,17 +53,16 @@ def main():
         try:
             import cv2
         except ImportError:
-            print("Advertencia: No se pudo importar cv2. La opcion --live sera ignorada. Instala con: pip install opencv-python")
             args.live = False
 
-    # Validar que el archivo existe
+
     if not os.path.isfile(args.target):
         print(f"Error: No se encontro la imagen '{args.target}'")
         sys.exit(1)
 
     os.makedirs(args.output, exist_ok=True)
 
-    # Cargar imagen objetivo
+
     print(f"Imagen objetivo: {args.target}")
     target_img = Image.open(args.target)
     print(f"  Resolucion original: {target_img.size}")
@@ -73,10 +72,10 @@ def main():
 
     canvas = Canvas(target_img)
 
-    # Guardar imagen objetivo reducida como referencia
+
     target_img.save(os.path.join(args.output, "target_resized.png"))
 
-    # Configurar optimizador
+
     optimizer = HillClimbingOptimizer(canvas, iterations_per_stroke=args.iterations)
 
     print(f"\n{'='*50}")
@@ -91,7 +90,7 @@ def main():
     start_time = time.time()
 
     while added < args.strokes:
-        # Progreso de 0.0 a 1.0
+
         progress = added / args.strokes
         stroke = optimizer.optimize_next_stroke(progress)
 
@@ -115,7 +114,7 @@ def main():
         else:
             fails += 1
             if fails >= args.max_fails:
-                # Guardar el ultimo progreso antes de parar
+
                 out_path = os.path.join(args.output, f"progress_{added:04d}_stalled.png")
                 canvas.get_image().save(out_path)
                 print(f"\n  Estancado despues de {added} strokes ({args.max_fails} fallos consecutivos).")
@@ -124,7 +123,7 @@ def main():
 
     elapsed = time.time() - start_time
 
-    # Guardar resultado final
+
     final_path = os.path.join(args.output, "final_result.png")
     canvas.get_image().save(final_path)
 
@@ -137,7 +136,7 @@ def main():
     print(f"{'='*50}")
 
     if args.live:
-        print("Presiona cualquier tecla en la ventana de la imagen para cerrar...")
+
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
